@@ -16,13 +16,12 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 
 
-
-
-
 //https://api.github.com/search/users?q=rm+sort:followers
 //https://api.github.com/search/users?q=rm+sort:followerspage=1&per_page=10
 
 class MainActivity : AppCompatActivity() {
+
+    var usersData:ArrayList<Items>?=null
 
     companion object {
 
@@ -31,12 +30,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
         searchText.addTextChangedListener(object : TextWatcher {
             override fun onTextChanged(s: CharSequence, start: Int, before: Int, count: Int) {
@@ -49,20 +42,33 @@ class MainActivity : AppCompatActivity() {
 
             override fun afterTextChanged(s: Editable) {
 
-                Log.v("Text is ",s.toString());
+                Log.v("Text is ",s.toString())
 
                 val url="https://api.github.com/search/users?q="+s.toString().trim()+"+sort:followers"
                 fetchData(url)
             }
         })
+
+    }
+
+    private var  itemsAdapter: adapter?=null
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        usersData= ArrayList()
+
+        resultRecyclerView.setHasFixedSize(true)
+        resultRecyclerView.layoutManager=LinearLayoutManager(this@MainActivity,LinearLayoutManager.VERTICAL,false)
+        itemsAdapter=adapter(this@MainActivity,usersData)
+        resultRecyclerView.adapter=itemsAdapter
+
     }
 
     private fun  fetchData(url: String) {
 
-
-
         val tag_string_req = "string_req"
-
 
         val strReq = StringRequest(Request.Method.GET,
                 url, Response.Listener<String> {
@@ -71,17 +77,17 @@ class MainActivity : AppCompatActivity() {
                                 Log.d(TAG, response.toString())
 
             val builder = GsonBuilder()
-
             val gson = builder.create()
+            //val allItems=gson.fromJson(response,AllUsers::class.java)
 
-            var allItems=gson.fromJson(response,AllUsers::class.java)
+            val data=gson.fromJson(response,AllUsers::class.java)
+            usersData=data.items
 
-            Log.v("No of users",allItems.items?.size.toString())
+            Log.v("No of users",usersData?.size.toString())
 
-            resultRecyclerView.setHasFixedSize(true)
-            resultRecyclerView.layoutManager=LinearLayoutManager(this@MainActivity,LinearLayoutManager.VERTICAL,false)
-            resultRecyclerView.adapter=adapter(this@MainActivity,allItems.items)
-
+            resultRecyclerView.removeAllViews()
+            itemsAdapter?.updateData(usersData)
+            itemsAdapter?.notifyDataSetChanged()
 
         }, Response.ErrorListener { error ->
 

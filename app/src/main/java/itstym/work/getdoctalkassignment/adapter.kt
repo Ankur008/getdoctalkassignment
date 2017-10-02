@@ -2,6 +2,7 @@ package itstym.work.getdoctalkassignment
 
 import android.content.Context
 import android.support.v7.widget.RecyclerView
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,21 +15,15 @@ import kotlinx.android.synthetic.main.user_item.view.*
 
 class adapter(var mcontext: Context, var users:ArrayList<Items>? ): RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    val blogPost=1
-    val blogLoadMore=2;
-
-    override fun getItemViewType(position: Int): Int {
-
-        if (position<itemCount-1){
-            return blogPost
-        }else{
-            return blogLoadMore
-        }
-        return super.getItemViewType(position)
-    }
 
     override fun getItemCount(): Int {
+        Log.v("size is ",users?.size!!.toString())
         return users?.size!!
+
+    }
+
+    fun updateData(users: ArrayList<Items>?){
+        this.users=users
     }
 
     override fun onCreateViewHolder(parent: ViewGroup?, viewType: Int): RecyclerView.ViewHolder {
